@@ -197,7 +197,7 @@ export default function SavedRecipesPage() {
               </h1>
             </div>
             <p className="text-xl text-gray-600">
-              Recipes you've liked and want to keep for later
+              Recipes you&quot;ve liked and want to keep for later
             </p>
           </div>
 

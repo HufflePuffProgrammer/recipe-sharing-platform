@@ -396,7 +396,7 @@ function RecipeDetailContent() {
                 Delete Recipe
               </h3>
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete "{recipe?.title}"? This action cannot be undone.
+                Are you sure you want to delete {recipe?.title}? This action cannot be undone.
               </p>
               <div className="flex gap-3 justify-end">
                 <Button

@@ -235,7 +235,7 @@ function DashboardContent() {
               </div>
               {searchQuery && (
                 <p className="text-sm text-gray-500 mt-2 text-center">
-                  Searching for "{searchQuery}"...
+                  Searching for {searchQuery}..
                 </p>
               )}
             </div>
@@ -262,7 +262,7 @@ function DashboardContent() {
                     No recipes found
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    No recipes match your search for "{searchQuery}".
+                    No recipes match your search for {searchQuery}.
                   </p>
                   <Button
                     onClick={clearSearch}
@@ -303,7 +303,7 @@ function DashboardContent() {
               {searchQuery && (
                 <div className="mb-4 text-center">
                   <p className="text-sm text-gray-600">
-                    Found {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} for "{searchQuery}"
+                    Found {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} for &quot{searchQuery}&quot
                   </p>
                 </div>
               )}

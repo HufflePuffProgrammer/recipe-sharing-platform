@@ -29,34 +29,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [supabaseClient, setSupabaseClient] = useState<ReturnType<typeof createClient> | null>(null);
 
-  let supabase;
-  try {
-    supabase = createClient();
-  } catch (err) {
-    console.error('Failed to create Supabase client:', err);
-    setError('Failed to initialize authentication');
-    setLoading(false);
-    return (
-      <AuthContext.Provider value={{
-        user: null,
-        session: null,
-        loading: false,
-        signUp: async () => ({ error: 'Authentication not available' }),
-        signIn: async () => ({ error: 'Authentication not available' }),
-        signOut: async () => {},
-        resetPassword: async () => ({ error: 'Authentication not available' })
-      }}>
-        {children}
-      </AuthContext.Provider>
-    );
-  }
+  // Initialize Supabase client in useEffect to avoid conditional hook calls
+  useEffect(() => {
+    try {
+      const client = createClient();
+      setSupabaseClient(client);
+    } catch (err) {
+      console.error('Failed to create Supabase client:', err);
+      setError('Failed to initialize authentication');
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
+    if (!supabaseClient) return;
     // Get initial session
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
         if (error) {
           console.error('Error getting session:', error);
         } else {
@@ -73,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getInitialSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
       async (event: string, session: Session | null) => {
         // Only log meaningful auth events, not initial session check
         if (event !== 'INITIAL_SESSION') {
@@ -88,13 +80,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, [supabaseClient]);
 
   const signUp = async (email: string, password: string) => {
+    if (!supabaseClient) {
+      return { error: 'Authentication not available' };
+    }
+
     try {
       console.log('Attempting to sign up with:', { email, passwordLength: password.length });
 
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
         options: {
@@ -149,8 +145,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    if (!supabaseClient) {
+      return { error: 'Authentication not available' };
+    }
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
       });
@@ -166,16 +166,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    if (!supabaseClient) {
+      return;
+    }
+
     try {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
   const resetPassword = async (email: string) => {
+    if (!supabaseClient) {
+      return { error: 'Authentication not available' };
+    }
+
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
 
       if (error) {
         return { error: error.message };

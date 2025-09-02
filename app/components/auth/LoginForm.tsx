@@ -96,7 +96,7 @@ export function LoginForm({ onToggleMode, redirectTo }: LoginFormProps) {
                 onClick={onToggleMode}
                 disabled={loading}
               >
-                Don't have an account? Sign Up
+                Dont have an account? Sign Up
               </Button>
             </div>
           )}
