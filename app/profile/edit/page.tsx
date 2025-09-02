@@ -29,20 +29,38 @@ function ProfileEditContent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState('');
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null);
 
   const [formData, setFormData] = useState({
     username: '',
     full_name: ''
   });
 
+  // Initialize Supabase client
   useEffect(() => {
-    if (user?.id) {
+    try {
+      const client = createClient();
+      setSupabase(client);
+    } catch (err) {
+      console.error('Failed to initialize Supabase client:', err);
+      setError('Failed to initialize authentication. Please check your environment configuration.');
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user?.id && supabase) {
       fetchProfile();
     }
-  }, [user?.id]);
+  }, [user?.id, supabase]);
 
   const fetchProfile = async () => {
+    if (!supabase) {
+      setError('Authentication not available');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -89,6 +107,12 @@ function ProfileEditContent() {
     setError('');
     setSuccess('');
     setSaving(true);
+
+    if (!supabase) {
+      setError('Authentication not available');
+      setSaving(false);
+      return;
+    }
 
     try {
       // Validate inputs
